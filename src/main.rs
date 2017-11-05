@@ -35,21 +35,21 @@ fn free_mem(ptr: *mut ()) {
     }
 }
 
-fn write(contents: *mut u8, value: u8) {
+fn write(contents: *mut u8, offset: isize, value: u8) {
     unsafe {
-        write_volatile(contents, value);
+        write_volatile(contents.offset(offset), value);
     }
 }
 
-fn read(contents: *mut u8) -> u8 {
-    unsafe { read_volatile(contents) }
+fn read(contents: *mut u8, offset: isize) -> u8 {
+    unsafe { read_volatile(contents.offset(offset)) }
 }
 
 fn main() {
     let (contents, ptr) = create_mem();
     let jit = JitMemory::new(1);
-    write(contents, 12);
-    let val = read(contents);
+    write(contents, 0, 12);
+    let val = read(contents, 0);
     println!("{:?}", val);
     free_mem(ptr);
 }
