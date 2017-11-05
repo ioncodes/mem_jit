@@ -54,7 +54,7 @@ fn main() {
     jit.emit64(ptr as u64); // mov rax, <64 bit address>
     let rax = jit.execute();
     assert_eq!(ptr as u64, rax as u64);
-    jit.emit_bytes(vec![0x48, 0x83, 0x00, 0x05]); // add qword ptr [rax], 5
+    jit.emit_bytes(vec![0x48, 0x83, 0x00, 0x05]); // add qword ptr [rax+0], 5
     let _ = jit.execute();
     let m = read(contents, 0);
     println!("{:?}", m);
