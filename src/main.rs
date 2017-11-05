@@ -10,7 +10,7 @@ extern "C" {
     fn memset(s: *mut libc::c_void, c: libc::uint32_t, n: libc::size_t) -> *mut libc::c_void;
 }
 
-fn main() {
+fn create_mem() -> (*mut u8, *mut ()) {
     let contents: *mut u8;
     let ptr: *mut ();
     let size = 1 * 4096;
@@ -23,7 +23,17 @@ fn main() {
 
         contents = mem::transmute(ptr);
     }
+    (contents, ptr)
+}
 
+fn free_mem(ptr: *mut ()) {
+    unsafe {
+        aligned_alloc::aligned_free(ptr);
+    }
+}
+
+fn main() {
+    let (contents, ptr) = create_mem();
     unsafe {
         println!("Offset: {:?}", &*contents.offset(0));
         println!("From Pointer: {:?}", read_volatile(contents));
@@ -31,8 +41,5 @@ fn main() {
         println!("Offset: {:?}", &*contents.offset(0));
         println!("From Pointer: {:?}", read_volatile(contents));
     }
-
-    unsafe {
-        aligned_alloc::aligned_free(ptr);
-    }
+    free_mem(ptr);
 }
