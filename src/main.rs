@@ -47,9 +47,12 @@ fn read(contents: *mut u8, offset: isize) -> u8 {
 
 fn main() {
     let (contents, ptr) = create_mem();
-    let jit = JitMemory::new(1);
+    let mut jit = JitMemory::new(1);
     write(contents, 0, 12);
     let val = read(contents, 0);
-    println!("{:?}", val);
+    jit.emit_bytes(vec![0x48, 0xb8]);
+    jit.emit64(ptr as u64); // mov rax, <64 bit address>
+    let rax = jit.execute();
+    assert_eq!(ptr as u64, rax as u64);
     free_mem(ptr);
 }
