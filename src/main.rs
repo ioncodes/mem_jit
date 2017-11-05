@@ -2,9 +2,12 @@ extern crate libc;
 extern crate aligned_alloc;
 extern crate region;
 
+mod jit_memory;
+
 use std::mem;
 use region::{View, Protection};
 use std::ptr::{read_volatile, write_volatile};
+use jit_memory::JitMemory;
 
 extern "C" {
     fn memset(s: *mut libc::c_void, c: libc::uint32_t, n: libc::size_t) -> *mut libc::c_void;
@@ -32,14 +35,21 @@ fn free_mem(ptr: *mut ()) {
     }
 }
 
+fn write(contents: *mut u8, value: u8) {
+    unsafe {
+        write_volatile(contents, value);
+    }
+}
+
+fn read(contents: *mut u8) -> u8 {
+    unsafe { read_volatile(contents) }
+}
+
 fn main() {
     let (contents, ptr) = create_mem();
-    unsafe {
-        println!("Offset: {:?}", &*contents.offset(0));
-        println!("From Pointer: {:?}", read_volatile(contents));
-        write_volatile(contents, 12); // add [contents+0], 12
-        println!("Offset: {:?}", &*contents.offset(0));
-        println!("From Pointer: {:?}", read_volatile(contents));
-    }
+    let jit = JitMemory::new(1);
+    write(contents, 12);
+    let val = read(contents);
+    println!("{:?}", val);
     free_mem(ptr);
 }
